@@ -3,9 +3,6 @@ package cn.cat.middleware.dbrouter.config;
 import cn.cat.middleware.dbrouter.DBRouterConfig;
 import cn.cat.middleware.dbrouter.dynamic.DynamicDataSource;
 import cn.cat.middleware.dbrouter.util.PropertyUtil;
-import com.alibaba.fastjson.JSON;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,7 +40,7 @@ public class DataSourceAutoConfig implements EnvironmentAware {
     /**
      * 将DB的信息注入到spring中，供后续获取
      *
-     * @return
+     * @return 数据源配置
      */
     @Bean
     public DBRouterConfig dbRouterConfig() {
