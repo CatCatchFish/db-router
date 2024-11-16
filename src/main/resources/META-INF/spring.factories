@@ -1,0 +1,2 @@
+spring.factories.org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  cn.cat.middleware.dbrouter.config.DataSourceAutoConfig
