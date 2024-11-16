@@ -24,8 +24,6 @@ import java.util.Objects;
  */
 @Configuration
 public class DataSourceAutoConfig implements EnvironmentAware {
-    private static final Logger logger = LoggerFactory.getLogger(DataSourceAutoConfig.class);
-
     /**
      * 数据源配置组
      * value：数  据源详细信息
@@ -63,7 +61,6 @@ public class DataSourceAutoConfig implements EnvironmentAware {
             dataSource.setUsername(objMap.get("username").toString());
             dataSource.setPassword(objMap.get("password").toString());
             targetDataSources.put(dbInfo, dataSource);
-            logger.info("load datasource: " + JSON.toJSONString(dataSource));
         }
 
         // 设置数据源
