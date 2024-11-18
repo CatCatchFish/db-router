@@ -35,8 +35,12 @@ public class DBRouterJoinPoint {
 
     @Around("aopPoint() && @annotation(dbRouter)")
     public Object doRouter(ProceedingJoinPoint jp, DBRouter dbRouter) throws Throwable {
+        // 获取路由key
         String dbKey = dbRouter.key();
-        if (StringUtils.isBlank(dbKey)) throw new RuntimeException("annotation DBRouter key is null！");
+        if (StringUtils.isBlank(dbKey) && StringUtils.isBlank(dbRouterConfig.getRouterKey()))
+            throw new RuntimeException("annotation DBRouter key is null！");
+
+        dbKey = StringUtils.isBlank(dbKey) ? dbRouterConfig.getRouterKey() : dbKey;
         // 路由属性
         String dbKeyAttr = getAttrValue(dbKey, jp.getArgs());
         // 计算路由

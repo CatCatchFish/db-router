@@ -15,12 +15,19 @@ public class DBRouterConfig {
      */
     private int tbCount;
 
+    /**
+     * 路由字段
+     */
+    private String routerKey;
+
+
     public DBRouterConfig() {
     }
 
-    public DBRouterConfig(int dbCount, int tbCount) {
+    public DBRouterConfig(int dbCount, int tbCount, String routerKey) {
         this.dbCount = dbCount;
         this.tbCount = tbCount;
+        this.routerKey = routerKey;
     }
 
     public int getDbCount() {
@@ -38,4 +45,13 @@ public class DBRouterConfig {
     public void setTbCount(int tbCount) {
         this.tbCount = tbCount;
     }
+
+    public String getRouterKey() {
+        return routerKey;
+    }
+
+    public void setRouterKey(String routerKey) {
+        this.routerKey = routerKey;
+    }
+
 }
