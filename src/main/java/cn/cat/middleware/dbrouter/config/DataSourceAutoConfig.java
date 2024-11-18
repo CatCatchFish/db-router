@@ -2,11 +2,13 @@ package cn.cat.middleware.dbrouter.config;
 
 import cn.cat.middleware.dbrouter.DBRouterConfig;
 import cn.cat.middleware.dbrouter.DBRouterJoinPoint;
+import cn.cat.middleware.dbrouter.dynamic.DynamicMybatisPlugin;
 import cn.cat.middleware.dbrouter.dynamic.pool.ConnectPool;
 import cn.cat.middleware.dbrouter.dynamic.pool.factory.ConnectPoolFactory;
 import cn.cat.middleware.dbrouter.dynamic.DynamicDataSource;
 import cn.cat.middleware.dbrouter.type.PoolType;
 import cn.cat.middleware.dbrouter.util.PropertyUtil;
+import org.apache.ibatis.plugin.Interceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -73,6 +75,14 @@ public class DataSourceAutoConfig implements EnvironmentAware {
     @ConditionalOnMissingBean
     public DBRouterJoinPoint dbRouterJoinPoint(DBRouterConfig dbRouterConfig) {
         return new DBRouterJoinPoint(dbRouterConfig);
+    }
+
+    /**
+     * mybatis拦截器 动态决定表的路由
+     */
+    @Bean
+    public Interceptor plugin() {
+        return new DynamicMybatisPlugin();
     }
 
     @Bean
