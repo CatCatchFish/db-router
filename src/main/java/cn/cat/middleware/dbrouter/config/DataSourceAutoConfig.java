@@ -16,6 +16,8 @@ import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.PreDestroy;
 import javax.sql.DataSource;
@@ -111,9 +113,23 @@ public class DataSourceAutoConfig implements EnvironmentAware {
         logger.info("数据源配置：{}，连接池类型：{}", dbInfo, poolTypeEnum.getValue());
 
         ConnectPool connectPool = ConnectPoolFactory.getConnectPool(poolType);
-        DataSource dataSource = (DataSource) connectPool.init(objMap);
-        logger.info("数据源：{}，初始化成功", dbInfo);
-        return dataSource;
+        return (DataSource) connectPool.init(objMap);
+    }
+
+    /**
+     * 事务模板
+     * @param dataSource 数据源
+     * @return 事务模板
+     */
+    @Bean
+    public TransactionTemplate transactionTemplate(DataSource dataSource) {
+        DataSourceTransactionManager dataSourceTransactionManager = new DataSourceTransactionManager();
+        dataSourceTransactionManager.setDataSource(dataSource);
+
+        TransactionTemplate transactionTemplate = new TransactionTemplate();
+        transactionTemplate.setTransactionManager(dataSourceTransactionManager);
+        transactionTemplate.setPropagationBehaviorName("PROPAGATION_REQUIRED");
+        return transactionTemplate;
     }
 
     /**

@@ -25,7 +25,6 @@ import java.util.regex.Pattern;
  */
 @Intercepts({@Signature(type = StatementHandler.class, method = "prepare", args = {Connection.class, Integer.class})})
 public class DynamicMybatisPlugin implements Interceptor {
-    private static final Logger logger = LoggerFactory.getLogger(DynamicMybatisPlugin.class);
     private final Pattern pattern = Pattern.compile("(from|into|update)[\\s]{1,}(\\w{1,})", Pattern.CASE_INSENSITIVE);
 
     @Override
@@ -60,7 +59,6 @@ public class DynamicMybatisPlugin implements Interceptor {
 
         // 获取线程变量中存储的分表信息 并替换SQL
         String replaceSql = matcher.replaceAll(tableName + "_" + DBContextHolder.getTBKey());
-        logger.info("tableName：{}，动态替换：{} ", tableName, replaceSql);
 
         // 通过反射修改Sql语句
         Field field = boundSql.getClass().getDeclaredField("sql");
