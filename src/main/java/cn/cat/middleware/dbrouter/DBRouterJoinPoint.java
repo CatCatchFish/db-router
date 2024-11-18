@@ -12,9 +12,7 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.lang.reflect.Method;
 
 /**
@@ -22,12 +20,13 @@ import java.lang.reflect.Method;
  * @description : 数据路由切面，通过自定义注解的方式，拦截被切面的方法，进行数据库路由
  */
 @Aspect
-@Component("db-router-point")
 public class DBRouterJoinPoint {
     private static final Logger logger = LoggerFactory.getLogger(DBRouterJoinPoint.class);
+    private final DBRouterConfig dbRouterConfig;
 
-    @Resource
-    private DBRouterConfig dbRouterConfig;
+    public DBRouterJoinPoint(DBRouterConfig dbRouterConfig) {
+        this.dbRouterConfig = dbRouterConfig;
+    }
 
     @Pointcut("@annotation(cn.cat.middleware.dbrouter.annotation.DBRouter)")
     public void aopPoint() {

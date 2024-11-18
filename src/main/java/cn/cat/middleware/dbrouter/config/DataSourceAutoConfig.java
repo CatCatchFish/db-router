@@ -1,6 +1,7 @@
 package cn.cat.middleware.dbrouter.config;
 
 import cn.cat.middleware.dbrouter.DBRouterConfig;
+import cn.cat.middleware.dbrouter.DBRouterJoinPoint;
 import cn.cat.middleware.dbrouter.dynamic.pool.ConnectPool;
 import cn.cat.middleware.dbrouter.dynamic.pool.factory.ConnectPoolFactory;
 import cn.cat.middleware.dbrouter.dynamic.DynamicDataSource;
@@ -8,10 +9,13 @@ import cn.cat.middleware.dbrouter.type.PoolType;
 import cn.cat.middleware.dbrouter.util.PropertyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
+import javax.annotation.PreDestroy;
 import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +25,7 @@ import java.util.Objects;
  * @author Cat
  * @description 解析数据源配置
  */
+@Configuration
 public class DataSourceAutoConfig implements EnvironmentAware {
     private static final Logger logger = LoggerFactory.getLogger(DataSourceAutoConfig.class);
     /**
@@ -59,10 +64,15 @@ public class DataSourceAutoConfig implements EnvironmentAware {
      *
      * @return 数据源配置
      */
-
     @Bean
     public DBRouterConfig dbRouterConfig() {
         return new DBRouterConfig(dbCount, tbCount, routerKey);
+    }
+
+    @Bean(name = "db-router-point")
+    @ConditionalOnMissingBean
+    public DBRouterJoinPoint dbRouterJoinPoint(DBRouterConfig dbRouterConfig) {
+        return new DBRouterJoinPoint(dbRouterConfig);
     }
 
     @Bean
@@ -122,6 +132,12 @@ public class DataSourceAutoConfig implements EnvironmentAware {
         // 默认数据源
         defaultDb = environment.getProperty(prefix + "default");
         defaultDataSourceConfig = PropertyUtil.handle(environment, prefix + defaultDb, Map.class);
+    }
+
+    @PreDestroy
+    public void onShutdown() {
+        logger.info("关闭数据源连接池");
+        ConnectPoolFactory.clear();
     }
 
 }

@@ -25,8 +25,6 @@ public class ConnectPoolFactory {
     }
 
     public static void clear() {
-        connectPoolMap.forEach((k, v) -> {
-
-        });
+        connectPoolMap.forEach((k, v) -> v.close());
     }
 }
