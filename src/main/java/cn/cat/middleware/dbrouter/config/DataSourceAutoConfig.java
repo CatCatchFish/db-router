@@ -6,6 +6,8 @@ import cn.cat.middleware.dbrouter.dynamic.DynamicMybatisPlugin;
 import cn.cat.middleware.dbrouter.dynamic.pool.ConnectPool;
 import cn.cat.middleware.dbrouter.dynamic.pool.factory.ConnectPoolFactory;
 import cn.cat.middleware.dbrouter.dynamic.DynamicDataSource;
+import cn.cat.middleware.dbrouter.dynamic.strategy.IDBRouterStrategy;
+import cn.cat.middleware.dbrouter.dynamic.strategy.impl.DBRouterStrategy;
 import cn.cat.middleware.dbrouter.type.PoolType;
 import cn.cat.middleware.dbrouter.util.PropertyUtil;
 import org.apache.ibatis.plugin.Interceptor;
@@ -75,8 +77,8 @@ public class DataSourceAutoConfig implements EnvironmentAware {
 
     @Bean(name = "db-router-point")
     @ConditionalOnMissingBean
-    public DBRouterJoinPoint dbRouterJoinPoint(DBRouterConfig dbRouterConfig) {
-        return new DBRouterJoinPoint(dbRouterConfig);
+    public DBRouterJoinPoint dbRouterJoinPoint(DBRouterConfig dbRouterConfig, IDBRouterStrategy dbRouterStrategy) {
+        return new DBRouterJoinPoint(dbRouterConfig, dbRouterStrategy);
     }
 
     /**
@@ -85,6 +87,17 @@ public class DataSourceAutoConfig implements EnvironmentAware {
     @Bean
     public Interceptor plugin() {
         return new DynamicMybatisPlugin();
+    }
+
+    /**
+     * 依赖注入
+     *
+     * @param dbRouterConfig 数据库路由配置
+     * @return 路由策略
+     */
+    @Bean
+    public IDBRouterStrategy dbRouterStrategy(DBRouterConfig dbRouterConfig) {
+        return new DBRouterStrategy(dbRouterConfig);
     }
 
     @Bean
@@ -118,6 +131,7 @@ public class DataSourceAutoConfig implements EnvironmentAware {
 
     /**
      * 事务模板
+     *
      * @param dataSource 数据源
      * @return 事务模板
      */
