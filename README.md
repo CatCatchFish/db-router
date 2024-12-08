@@ -83,5 +83,5 @@ mini-db-router:
 
 #### 执行`SQL`语句流程
 
-![流程梳理](img\流程梳理.png)
+![流程梳理](img/流程梳理.png)
 
