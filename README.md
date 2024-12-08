@@ -73,11 +73,11 @@ mini-db-router:
 
 #### 如何支持分库分表策略？
 
-| 策略     | `@DBRouterStrategy` | `@DBRouter` |
-| -------- | ------------------- | ----------- |
-| 仅分库   | `false`             | `true`      |
-| 仅分表   | `true`              | `false`     |
-| 分库分表 | `true`              | `true`      |
+| 策略     | `@DBRouterSplit` | `@DBRouter` |
+| -------- | ---------------- | ----------- |
+| 仅分库   | `false`          | `true`      |
+| 仅分表   | `true`           | `false`     |
+| 分库分表 | `true`           | `true`      |
 
 
 
@@ -85,3 +85,60 @@ mini-db-router:
 
 ![流程梳理](img/流程梳理.png)
 
+
+
+### 如何解决同一个事务中切换数据导致事务失效？
+
+原因：`AbstractRoutingDataSource`是基于`ThreadLocal`方式实现动态切换数据源的，这种切换会影响当前线程的数据库连接，相当于断开数据库连接，再去连接另一个数据库，而`MyBatis`的默认事务管理方式是基于`JDBC`的`Connection`的，所以同一事务下切换数据源会导致事务失效。
+
+如何解决：使用`Spring`的编程式事务（`TransactionTemplate`）
+
+步骤：
+
+1. 去掉`DAO`方法层的`@DBRouter`注解；
+2. 使用`DBRouterStrategy`计算出路由
+3. 使用`TransactionTemplate`管理本次事务
+
+示例：
+
+```java
+@Test
+public void test_queryUserInfoByUserId_default() {
+    User user = new User("cat");
+    // 分表路由
+    userDao.insertUser(user);
+    // 默认路由
+    User userQuery = userDefaultDao.queryUserInfoByUserId(new User("admin"));
+    logger.info("测试结果：{}", JSON.toJSONString(userQuery));
+}
+```
+
+修改：
+
+```java
+@Test
+public void test_queryUserInfoByUserId_default() {
+    User user = new User("cat");
+    try {
+        dbRouterStrategy.doRouter(user.getUserId());
+        transactionTemplate.execute(status -> {
+            try {
+                // 分表路由
+                userDao.insertUser(user);
+                // 默认路由
+                User userQuery = userDefaultDao.queryUserInfoByUserId(new User("admin"));
+                logger.info("测试结果：{}", JSON.toJSONString(userQuery));
+                return 1;
+            } catch (DuplicateKeyException e) {
+                status.setRollbackOnly();
+                logger.error("插入重复数据", e);
+                throw e;
+            }
+        });
+    } finally {
+        dbRouterStrategy.clear();
+    }
+}
+```
+
+**最后要调用`clear()`方法是因为使用`ThreadLocal`可能会导致内存泄漏**
